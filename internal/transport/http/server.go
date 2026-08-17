@@ -6,6 +6,7 @@ import (
 	"github.com/wyw14/cry039/internal/application"
 	"github.com/wyw14/cry039/internal/domain"
 	"github.com/wyw14/cry039/internal/middleware"
+	"github.com/wyw14/cry039/internal/service"
 	"go.uber.org/zap"
 	"net/http"
 )
@@ -32,7 +33,7 @@ func Server(mover *application.Mover, logger *zap.Logger) *gin.Engine {
 			c.JSON(422, gin.H{"code": "INVALID_MIGRATION", "message": "迁移参数不完整", "request_id": c.GetString("request_id")})
 			return
 		}
-		if len(in.Reviewers) != 2 {
+		if !service.DistinctReviewers(in.Reviewers) {
 			c.JSON(409, gin.H{"code": "REVIEW_CONFLICT", "message": "需要两名不同复核人", "request_id": c.GetString("request_id")})
 			return
 		}

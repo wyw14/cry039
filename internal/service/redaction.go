@@ -12,7 +12,7 @@ func RedactRemark(v string) string {
 }
 
 func ReviewerIdentity(v string) string {
-	return strings.TrimSpace(v)
+	return strings.ToLower(strings.Join(strings.Fields(v), " "))
 }
 
 func DistinctReviewers(reviewers []string) bool {

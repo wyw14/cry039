@@ -39,9 +39,9 @@ type Migration struct {
 }
 
 func (m *Migration) Approve(reviewer string) error {
-	reviewer = strings.TrimSpace(reviewer)
+	reviewer = reviewerIdentity(reviewer)
 	for _, r := range m.Reviewers {
-		if strings.TrimSpace(r) == reviewer {
+		if reviewerIdentity(r) == reviewer {
 			return ErrSameReviewer
 		}
 	}
@@ -49,7 +49,17 @@ func (m *Migration) Approve(reviewer string) error {
 	return nil
 }
 func (m Migration) HasReviewQuorum() bool {
-	return len(m.Reviewers) >= 2
+	seen := map[string]struct{}{}
+	for _, reviewer := range m.Reviewers {
+		key := reviewerIdentity(reviewer)
+		if key != "" {
+			seen[key] = struct{}{}
+		}
+	}
+	return len(seen) >= 2
+}
+func reviewerIdentity(v string) string {
+	return strings.ToLower(strings.Join(strings.Fields(v), " "))
 }
 func ValidateAreas(source, target Area) error {
 	if source.ID == target.ID || target.Archived || source.Environment != target.Environment {
