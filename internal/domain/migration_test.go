@@ -53,3 +53,16 @@ func TestStatsFollowCurrentAreaOnly(t *testing.T) {
 		t.Fatalf("a=%+v b=%+v", a, b)
 	}
 }
+
+func TestIdempotentMigrationPipelineDomain(t *testing.T) {
+	now := time.Now()
+	feedback := Feedback{ID: "f", AreaID: "b", Version: 1, Timeline: []Event{{At: now, Action: "area_migrated"}}}
+	m := approved()
+	moved, err := m.Execute([]Feedback{feedback}, Area{ID: "a", Environment: "open"}, Area{ID: "b", Environment: "open"}, "operator", now.Add(time.Minute))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if moved[0].Version != 1 || len(moved[0].Timeline) != 1 {
+		t.Fatalf("already migrated feedback changed again: %+v", moved[0])
+	}
+}

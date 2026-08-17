@@ -30,3 +30,26 @@ func TestExecuteIsIdempotent(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestIdempotentMigrationPipelineApplication(t *testing.T) {
+	now := time.Now()
+	repo := repository.NewFeedbackMemory("m", []domain.Feedback{{ID: "f", AreaID: "a"}})
+	mover := NewMover(repo, func() time.Time { return now })
+	job := &domain.Migration{ID: "m", SourceArea: "a", TargetArea: "b", Reviewers: []string{"r1", "r2"}}
+	source := domain.Area{ID: "a", Environment: "open"}
+	target := domain.Area{ID: "b", Environment: "open"}
+	if _, err := mover.Execute(context.Background(), "key", "digest", job, source, target, "operator"); err != nil {
+		t.Fatal(err)
+	}
+	second, err := mover.Execute(context.Background(), "key", "digest", job, source, target, "operator")
+	if err != nil {
+		t.Fatal(err)
+	}
+	stored, err := repo.LoadForMigration(context.Background(), "m")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(second) != 1 || len(stored) != 1 || stored[0].Version != 1 || len(stored[0].Timeline) != 1 {
+		t.Fatalf("retry duplicated migration: second=%+v stored=%+v", second, stored)
+	}
+}

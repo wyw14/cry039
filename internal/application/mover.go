@@ -31,7 +31,18 @@ func (m *Mover) Execute(ctx context.Context, key, digest string, job *domain.Mig
 		if prior != digest {
 			return nil, ErrMigrationKeyConflict
 		}
-		return m.store.LoadForMigration(ctx, job.ID)
+		items, err := m.store.LoadForMigration(ctx, job.ID)
+		if err != nil {
+			return nil, err
+		}
+		moved, err := job.Execute(items, source, target, actor, m.clock())
+		if err != nil {
+			return nil, err
+		}
+		if err := m.store.ReplaceMigrationSet(ctx, job.ID, moved); err != nil {
+			return nil, err
+		}
+		return moved, nil
 	}
 	items, err := m.store.LoadForMigration(ctx, job.ID)
 	if err != nil {

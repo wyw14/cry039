@@ -62,7 +62,7 @@ func (m *Migration) Execute(items []Feedback, source, target Area, actor string,
 	out := make([]Feedback, len(items))
 	for i, f := range items {
 		out[i] = f
-		if f.AreaID != source.ID {
+		if f.AreaID != source.ID && f.AreaID != target.ID {
 			continue
 		}
 		out[i].AreaID = target.ID
