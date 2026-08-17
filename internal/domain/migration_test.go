@@ -53,3 +53,17 @@ func TestStatsFollowCurrentAreaOnly(t *testing.T) {
 		t.Fatalf("a=%+v b=%+v", a, b)
 	}
 }
+
+func TestMigrationHistoryPipelineDomain(t *testing.T) {
+	submitted := time.Date(2026, 8, 1, 8, 0, 0, 0, time.UTC)
+	prior := Event{At: submitted, Actor: "employee", Action: "submitted"}
+	feedback := Feedback{ID: "f1", AreaID: "a", SubmittedAt: submitted, Timeline: []Event{prior}}
+	m := approved()
+	moved, err := m.Execute([]Feedback{feedback}, Area{ID: "a", Environment: "open"}, Area{ID: "b", Environment: "open"}, "operator", submitted.Add(time.Hour))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !moved[0].SubmittedAt.Equal(submitted) || len(moved[0].Timeline) != 2 || moved[0].Timeline[0] != prior {
+		t.Fatalf("submission audit was rewritten: %+v", moved[0])
+	}
+}

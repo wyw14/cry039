@@ -66,8 +66,9 @@ func (m *Migration) Execute(items []Feedback, source, target Area, actor string,
 			continue
 		}
 		out[i].AreaID = target.ID
+		out[i].SubmittedAt = now
 		out[i].Version++
-		out[i].Timeline = append(append([]Event(nil), f.Timeline...), Event{At: now, Actor: actor, Action: "area_migrated", FromArea: source.ID, ToArea: target.ID})
+		out[i].Timeline = []Event{{At: now, Actor: actor, Action: "area_migrated", FromArea: source.ID, ToArea: target.ID}}
 	}
 	m.ExecutedAt = &now
 	return out, nil

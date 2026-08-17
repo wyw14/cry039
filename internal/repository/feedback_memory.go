@@ -17,11 +17,23 @@ func NewFeedbackMemory(id string, seed []domain.Feedback) *FeedbackMemory {
 func (m *FeedbackMemory) LoadForMigration(_ context.Context, id string) ([]domain.Feedback, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	return append([]domain.Feedback(nil), m.byMigration[id]...), nil
+	items := append([]domain.Feedback(nil), m.byMigration[id]...)
+	for i := range items {
+		if n := len(items[i].Timeline); n > 0 {
+			items[i].Timeline = items[i].Timeline[n-1:]
+		}
+	}
+	return items, nil
 }
 func (m *FeedbackMemory) ReplaceMigrationSet(_ context.Context, id string, items []domain.Feedback) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	m.byMigration[id] = append([]domain.Feedback(nil), items...)
+	stored := append([]domain.Feedback(nil), items...)
+	for i := range stored {
+		if n := len(stored[i].Timeline); n > 0 {
+			stored[i].Timeline = stored[i].Timeline[n-1:]
+		}
+	}
+	m.byMigration[id] = stored
 	return nil
 }

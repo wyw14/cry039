@@ -30,3 +30,19 @@ func TestExecuteIsIdempotent(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestMigrationHistoryPipelineApplication(t *testing.T) {
+	submitted := time.Date(2026, 8, 1, 8, 0, 0, 0, time.UTC)
+	prior := domain.Event{At: submitted, Actor: "employee", Action: "submitted"}
+	repo := repository.NewFeedbackMemory("m", []domain.Feedback{{ID: "f", AreaID: "a", SubmittedAt: submitted, Timeline: []domain.Event{prior}}})
+	mover := NewMover(repo, func() time.Time { return submitted.Add(time.Hour) })
+	job := &domain.Migration{ID: "m", SourceArea: "a", TargetArea: "b", Reviewers: []string{"r1", "r2"}}
+	moved, err := mover.Execute(context.Background(), "k", "d", job,
+		domain.Area{ID: "a", Environment: "open"}, domain.Area{ID: "b", Environment: "open"}, "operator")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !moved[0].SubmittedAt.Equal(submitted) || len(moved[0].Timeline) != 2 || moved[0].Timeline[0] != prior {
+		t.Fatalf("application lost feedback history: %+v", moved[0])
+	}
+}
