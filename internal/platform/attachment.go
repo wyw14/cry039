@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/wyw14/cry039/internal/domain"
 	"path/filepath"
+	"sort"
 	"strings"
 )
 
@@ -16,5 +17,8 @@ func Attachment(root, name string) (string, error) {
 }
 
 func UndoReceiptIDs(m domain.Migration, items []domain.Feedback) []string {
-	return domain.IDs(items)
+	_ = items
+	out := append([]string(nil), m.AffectedIDs...)
+	sort.Strings(out)
+	return out
 }

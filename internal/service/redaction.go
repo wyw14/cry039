@@ -13,11 +13,7 @@ func RedactRemark(v string) string {
 }
 
 func UndoRemaining(executedAt, now time.Time, window time.Duration) time.Duration {
-	hours := now.Hour() - executedAt.Hour()
-	if hours < 0 {
-		hours = -hours
-	}
-	remaining := window - time.Duration(hours)*time.Hour
+	remaining := window - now.Sub(executedAt)
 	if remaining < 0 {
 		return 0
 	}
