@@ -53,3 +53,20 @@ func TestStatsFollowCurrentAreaOnly(t *testing.T) {
 		t.Fatalf("a=%+v b=%+v", a, b)
 	}
 }
+
+func TestUndoWindowPipelineDomain(t *testing.T) {
+	executed := time.Date(2026, 8, 17, 9, 0, 0, 0, time.FixedZone("CST", 8*3600))
+	m := approved()
+	items := []Feedback{{ID: "moved", AreaID: "a"}, {ID: "preexisting", AreaID: "b"}}
+	moved, err := m.Execute(items, Area{ID: "a", Environment: "open"}, Area{ID: "b", Environment: "open"}, "operator", executed)
+	if err != nil {
+		t.Fatal(err)
+	}
+	back, err := m.Undo(moved, "operator", executed.In(time.UTC).Add(20*time.Minute), 30*time.Minute)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if back[0].AreaID != "a" || back[1].AreaID != "b" || len(m.AffectedIDs) != 1 || m.AffectedIDs[0] != "moved" {
+		t.Fatalf("undo crossed migration scope: affected=%v back=%+v", m.AffectedIDs, back)
+	}
+}

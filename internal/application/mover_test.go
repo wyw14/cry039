@@ -30,3 +30,23 @@ func TestExecuteIsIdempotent(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestUndoWindowPipelineApplication(t *testing.T) {
+	executed := time.Date(2026, 8, 17, 9, 0, 0, 0, time.FixedZone("CST", 8*3600))
+	current := executed
+	repo := repository.NewFeedbackMemory("m", []domain.Feedback{{ID: "moved", AreaID: "a"}, {ID: "preexisting", AreaID: "b"}})
+	mover := NewMover(repo, func() time.Time { return current })
+	job := &domain.Migration{ID: "m", SourceArea: "a", TargetArea: "b", Reviewers: []string{"r1", "r2"}}
+	if _, err := mover.Execute(context.Background(), "k", "d", job,
+		domain.Area{ID: "a", Environment: "open"}, domain.Area{ID: "b", Environment: "open"}, "operator"); err != nil {
+		t.Fatal(err)
+	}
+	current = executed.In(time.UTC).Add(20 * time.Minute)
+	back, err := mover.Undo(context.Background(), job, "operator", 30*time.Minute)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(back) != 2 || back[0].AreaID != "a" || back[1].AreaID != "b" {
+		t.Fatalf("undo changed unrelated feedback: %+v", back)
+	}
+}

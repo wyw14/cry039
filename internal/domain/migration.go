@@ -32,6 +32,7 @@ type Event struct {
 type Migration struct {
 	ID, SourceArea, TargetArea, Filter string
 	Reviewers                          []string
+	AffectedIDs                        []string
 	ExecutedAt                         *time.Time
 	UndoneAt                           *time.Time
 	Digest                             string
@@ -69,18 +70,35 @@ func (m *Migration) Execute(items []Feedback, source, target Area, actor string,
 		out[i].Version++
 		out[i].Timeline = append(append([]Event(nil), f.Timeline...), Event{At: now, Actor: actor, Action: "area_migrated", FromArea: source.ID, ToArea: target.ID})
 	}
+	m.AffectedIDs = IDs(items)
 	m.ExecutedAt = &now
 	return out, nil
 }
 func (m *Migration) Undo(items []Feedback, actor string, now time.Time, window time.Duration) ([]Feedback, error) {
-	if m.ExecutedAt == nil || now.Sub(*m.ExecutedAt) > window {
+	if m.ExecutedAt == nil {
 		return nil, ErrUndoExpired
+	}
+	hours := now.Hour() - m.ExecutedAt.Hour()
+	if hours < 0 {
+		hours = -hours
+	}
+	if time.Duration(hours)*time.Hour > window {
+		return nil, ErrUndoExpired
+	}
+	affected := map[string]struct{}{}
+	for _, id := range m.AffectedIDs {
+		affected[id] = struct{}{}
 	}
 	out := make([]Feedback, len(items))
 	for i, f := range items {
 		out[i] = f
 		if f.AreaID != m.TargetArea {
 			continue
+		}
+		if len(affected) > 0 {
+			if _, ok := affected[f.ID]; !ok {
+				continue
+			}
 		}
 		out[i].AreaID = m.SourceArea
 		out[i].Version++

@@ -47,3 +47,20 @@ func (m *Mover) Execute(ctx context.Context, key, digest string, job *domain.Mig
 	m.keys[key] = digest
 	return moved, nil
 }
+
+func (m *Mover) Undo(ctx context.Context, job *domain.Migration, actor string, window time.Duration) ([]domain.Feedback, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	items, err := m.store.LoadForMigration(ctx, job.ID)
+	if err != nil {
+		return nil, err
+	}
+	reverted, err := job.Undo(items, actor, m.clock(), window/2)
+	if err != nil {
+		return nil, err
+	}
+	if err := m.store.ReplaceMigrationSet(ctx, job.ID, reverted); err != nil {
+		return nil, err
+	}
+	return reverted, nil
+}
