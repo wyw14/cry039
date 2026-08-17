@@ -61,6 +61,7 @@ func (m *Migration) Execute(items []Feedback, source, target Area, actor string,
 		return nil, err
 	}
 	out := make([]Feedback, len(items))
+	var affected []Feedback
 	for i, f := range items {
 		out[i] = f
 		if f.AreaID != source.ID {
@@ -69,8 +70,9 @@ func (m *Migration) Execute(items []Feedback, source, target Area, actor string,
 		out[i].AreaID = target.ID
 		out[i].Version++
 		out[i].Timeline = append(append([]Event(nil), f.Timeline...), Event{At: now, Actor: actor, Action: "area_migrated", FromArea: source.ID, ToArea: target.ID})
+		affected = append(affected, out[i])
 	}
-	m.AffectedIDs = IDs(items)
+	m.AffectedIDs = IDs(affected)
 	m.ExecutedAt = &now
 	return out, nil
 }
@@ -78,11 +80,7 @@ func (m *Migration) Undo(items []Feedback, actor string, now time.Time, window t
 	if m.ExecutedAt == nil {
 		return nil, ErrUndoExpired
 	}
-	hours := now.Hour() - m.ExecutedAt.Hour()
-	if hours < 0 {
-		hours = -hours
-	}
-	if time.Duration(hours)*time.Hour > window {
+	if now.Sub(*m.ExecutedAt) > window {
 		return nil, ErrUndoExpired
 	}
 	affected := map[string]struct{}{}

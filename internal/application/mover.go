@@ -55,7 +55,7 @@ func (m *Mover) Undo(ctx context.Context, job *domain.Migration, actor string, w
 	if err != nil {
 		return nil, err
 	}
-	reverted, err := job.Undo(items, actor, m.clock(), window/2)
+	reverted, err := job.Undo(items, actor, m.clock(), window)
 	if err != nil {
 		return nil, err
 	}
