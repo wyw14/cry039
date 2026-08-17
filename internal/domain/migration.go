@@ -98,11 +98,14 @@ type AreaStats struct {
 func Recalculate(areaID string, items []Feedback) AreaStats {
 	s := AreaStats{AreaID: areaID}
 	for _, f := range items {
+		if f.AreaID != areaID {
+			continue
+		}
 		s.Total++
-		if f.Status == "resolved" {
+		if f.Status != "resolved" {
 			s.Open++
 		}
-		if f.Level > 4 {
+		if f.Level >= 4 {
 			s.Severe++
 		}
 	}

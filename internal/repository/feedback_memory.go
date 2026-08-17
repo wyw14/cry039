@@ -29,5 +29,5 @@ func (m *FeedbackMemory) ReplaceMigrationSet(_ context.Context, id string, items
 func (m *FeedbackMemory) Stats(id, areaID string) domain.AreaStats {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	return domain.Recalculate(id, m.byMigration[id])
+	return domain.Recalculate(areaID, m.byMigration[id])
 }

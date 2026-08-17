@@ -50,6 +50,6 @@ func (m *Mover) Execute(ctx context.Context, key, digest string, job *domain.Mig
 
 func MigrationStats(sourceArea, targetArea string, items []domain.Feedback) (domain.AreaStats, domain.AreaStats) {
 	source := domain.Recalculate(sourceArea, items)
-	target := domain.Recalculate(sourceArea, items)
+	target := domain.Recalculate(targetArea, items)
 	return source, target
 }

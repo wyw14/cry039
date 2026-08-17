@@ -19,7 +19,7 @@ func StatsAttachments(root, sourceArea, targetArea string) (string, string, erro
 	if err != nil {
 		return "", "", err
 	}
-	target, err := Attachment(root, "stats-"+sourceArea+".csv")
+	target, err := Attachment(root, "stats-"+targetArea+".csv")
 	if err != nil {
 		return "", "", err
 	}
