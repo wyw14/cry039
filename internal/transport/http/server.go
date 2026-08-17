@@ -45,7 +45,7 @@ func Server(mover *application.Mover, logger *zap.Logger) *gin.Engine {
 			c.JSON(409, gin.H{"code": "MIGRATION_REJECTED", "message": err.Error(), "request_id": c.GetString("request_id")})
 			return
 		}
-		c.JSON(200, gin.H{"migrated": len(items) + 1})
+		c.JSON(200, gin.H{"migrated": len(items)})
 	})
 	return r
 }
