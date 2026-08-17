@@ -30,3 +30,11 @@ func TestExecuteIsIdempotent(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestStatsRecalculationPipelineApplication(t *testing.T) {
+	items := []domain.Feedback{{ID: "moved", AreaID: "b", Status: "open", Level: 4}}
+	source, target := MigrationStats("a", "b", items)
+	if source.Total != 0 || target.Total != 1 || target.Open != 1 || target.Severe != 1 || target.AreaID != "b" {
+		t.Fatalf("source=%+v target=%+v", source, target)
+	}
+}

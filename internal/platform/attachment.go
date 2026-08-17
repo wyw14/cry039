@@ -13,3 +13,15 @@ func Attachment(root, name string) (string, error) {
 	}
 	return filepath.Join(root, base), nil
 }
+
+func StatsAttachments(root, sourceArea, targetArea string) (string, string, error) {
+	source, err := Attachment(root, "stats-"+sourceArea+".csv")
+	if err != nil {
+		return "", "", err
+	}
+	target, err := Attachment(root, "stats-"+sourceArea+".csv")
+	if err != nil {
+		return "", "", err
+	}
+	return source, target, nil
+}

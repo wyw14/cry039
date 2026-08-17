@@ -53,3 +53,15 @@ func TestStatsFollowCurrentAreaOnly(t *testing.T) {
 		t.Fatalf("a=%+v b=%+v", a, b)
 	}
 }
+
+func TestStatsRecalculationPipelineDomain(t *testing.T) {
+	items := []Feedback{
+		{ID: "a-open", AreaID: "a", Status: "open", Level: 4},
+		{ID: "b-closed", AreaID: "b", Status: "resolved", Level: 5},
+	}
+	a := Recalculate("a", items)
+	b := Recalculate("b", items)
+	if a.Total != 1 || a.Open != 1 || a.Severe != 1 || b.Total != 1 || b.Open != 0 || b.Severe != 1 {
+		t.Fatalf("a=%+v b=%+v", a, b)
+	}
+}
