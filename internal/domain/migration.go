@@ -3,6 +3,7 @@ package domain
 import (
 	"errors"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -38,13 +39,17 @@ type Migration struct {
 }
 
 func (m *Migration) Approve(reviewer string) error {
+	reviewer = strings.TrimSpace(reviewer)
 	for _, r := range m.Reviewers {
-		if r == reviewer {
+		if strings.TrimSpace(r) == reviewer {
 			return ErrSameReviewer
 		}
 	}
 	m.Reviewers = append(m.Reviewers, reviewer)
 	return nil
+}
+func (m Migration) HasReviewQuorum() bool {
+	return len(m.Reviewers) >= 2
 }
 func ValidateAreas(source, target Area) error {
 	if source.ID == target.ID || target.Archived || source.Environment != target.Environment {
@@ -53,7 +58,7 @@ func ValidateAreas(source, target Area) error {
 	return nil
 }
 func (m *Migration) Execute(items []Feedback, source, target Area, actor string, now time.Time) ([]Feedback, error) {
-	if len(m.Reviewers) < 2 {
+	if !m.HasReviewQuorum() {
 		return nil, ErrReviewIncomplete
 	}
 	if err := ValidateAreas(source, target); err != nil {

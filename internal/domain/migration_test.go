@@ -53,3 +53,16 @@ func TestStatsFollowCurrentAreaOnly(t *testing.T) {
 		t.Fatalf("a=%+v b=%+v", a, b)
 	}
 }
+
+func TestReviewerQuorumPipelineDomain(t *testing.T) {
+	m := Migration{}
+	if err := m.Approve(" Alice "); err != nil {
+		t.Fatal(err)
+	}
+	if !errors.Is(m.Approve("alice"), ErrSameReviewer) {
+		t.Fatal("case and whitespace variants must be the same reviewer")
+	}
+	if m.HasReviewQuorum() {
+		t.Fatalf("equivalent identities formed a quorum: %+v", m.Reviewers)
+	}
+}

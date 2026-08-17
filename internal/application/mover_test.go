@@ -30,3 +30,15 @@ func TestExecuteIsIdempotent(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestReviewerQuorumPipelineApplication(t *testing.T) {
+	now := time.Now()
+	repo := repository.NewFeedbackMemory("m", []domain.Feedback{{ID: "f", AreaID: "a"}})
+	mover := NewMover(repo, func() time.Time { return now })
+	job := &domain.Migration{ID: "m", SourceArea: "a", TargetArea: "b", Reviewers: []string{"Alice", " alice "}}
+	_, err := mover.Execute(context.Background(), "key", "digest", job,
+		domain.Area{ID: "a", Environment: "open"}, domain.Area{ID: "b", Environment: "open"}, "operator")
+	if !errors.Is(err, domain.ErrReviewIncomplete) {
+		t.Fatalf("execute error=%v, want incomplete review", err)
+	}
+}

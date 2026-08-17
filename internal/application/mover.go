@@ -27,6 +27,9 @@ func NewMover(s FeedbackStore, clock func() time.Time) *Mover {
 func (m *Mover) Execute(ctx context.Context, key, digest string, job *domain.Migration, source, target domain.Area, actor string) ([]domain.Feedback, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	if len(job.Reviewers) < 2 {
+		return nil, domain.ErrReviewIncomplete
+	}
 	if prior, ok := m.keys[key]; ok {
 		if prior != digest {
 			return nil, ErrMigrationKeyConflict

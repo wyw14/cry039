@@ -32,6 +32,10 @@ func Server(mover *application.Mover, logger *zap.Logger) *gin.Engine {
 			c.JSON(422, gin.H{"code": "INVALID_MIGRATION", "message": "迁移参数不完整", "request_id": c.GetString("request_id")})
 			return
 		}
+		if len(in.Reviewers) != 2 {
+			c.JSON(409, gin.H{"code": "REVIEW_CONFLICT", "message": "需要两名不同复核人", "request_id": c.GetString("request_id")})
+			return
+		}
 		job := &domain.Migration{ID: in.MigrationID, SourceArea: in.Source.ID, TargetArea: in.Target.ID}
 		for _, reviewer := range in.Reviewers {
 			if err := job.Approve(reviewer); err != nil {
