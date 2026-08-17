@@ -38,18 +38,30 @@ type Migration struct {
 	Digest                             string
 }
 
+func normalizeReviewer(r string) string {
+	return strings.ToLower(strings.TrimSpace(r))
+}
+
 func (m *Migration) Approve(reviewer string) error {
-	reviewer = strings.TrimSpace(reviewer)
+	normalized := normalizeReviewer(reviewer)
 	for _, r := range m.Reviewers {
-		if strings.TrimSpace(r) == reviewer {
+		if normalizeReviewer(r) == normalized {
 			return ErrSameReviewer
 		}
 	}
-	m.Reviewers = append(m.Reviewers, reviewer)
+	m.Reviewers = append(m.Reviewers, strings.TrimSpace(reviewer))
 	return nil
 }
 func (m Migration) HasReviewQuorum() bool {
-	return len(m.Reviewers) >= 2
+	seen := map[string]struct{}{}
+	for _, r := range m.Reviewers {
+		key := normalizeReviewer(r)
+		if key == "" {
+			continue
+		}
+		seen[key] = struct{}{}
+	}
+	return len(seen) >= 2
 }
 func ValidateAreas(source, target Area) error {
 	if source.ID == target.ID || target.Archived || source.Environment != target.Environment {
