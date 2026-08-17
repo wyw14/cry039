@@ -41,11 +41,6 @@ func (m *Mover) Execute(ctx context.Context, key, digest string, job *domain.Mig
 	if err != nil {
 		return nil, err
 	}
-	for i := range moved {
-		if n := len(moved[i].Timeline); n > 0 {
-			moved[i].Timeline = moved[i].Timeline[n-1:]
-		}
-	}
 	if err = m.store.ReplaceMigrationSet(ctx, job.ID, moved); err != nil {
 		return nil, err
 	}

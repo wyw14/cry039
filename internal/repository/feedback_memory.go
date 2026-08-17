@@ -19,9 +19,7 @@ func (m *FeedbackMemory) LoadForMigration(_ context.Context, id string) ([]domai
 	defer m.mu.RUnlock()
 	items := append([]domain.Feedback(nil), m.byMigration[id]...)
 	for i := range items {
-		if n := len(items[i].Timeline); n > 0 {
-			items[i].Timeline = items[i].Timeline[n-1:]
-		}
+		items[i].Timeline = append([]domain.Event(nil), items[i].Timeline...)
 	}
 	return items, nil
 }
@@ -30,9 +28,7 @@ func (m *FeedbackMemory) ReplaceMigrationSet(_ context.Context, id string, items
 	defer m.mu.Unlock()
 	stored := append([]domain.Feedback(nil), items...)
 	for i := range stored {
-		if n := len(stored[i].Timeline); n > 0 {
-			stored[i].Timeline = stored[i].Timeline[n-1:]
-		}
+		stored[i].Timeline = append([]domain.Event(nil), stored[i].Timeline...)
 	}
 	m.byMigration[id] = stored
 	return nil
