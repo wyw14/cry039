@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS office_areas(id text PRIMARY KEY,floor text NOT NULL,environment text NOT NULL,capacity integer NOT NULL,archived boolean NOT NULL DEFAULT false);
+CREATE TABLE IF NOT EXISTS feedback(id text PRIMARY KEY,area_id text NOT NULL REFERENCES office_areas(id),submitted_at timestamptz NOT NULL,status text NOT NULL,level integer NOT NULL,remark text NOT NULL,version bigint NOT NULL DEFAULT 0);
+CREATE TABLE IF NOT EXISTS feedback_events(id bigserial PRIMARY KEY,feedback_id text NOT NULL REFERENCES feedback(id),actor text NOT NULL,action text NOT NULL,from_area text,to_area text,created_at timestamptz NOT NULL);
+CREATE TABLE IF NOT EXISTS migration_batches(id text PRIMARY KEY,idempotency_key text NOT NULL UNIQUE,payload_digest text NOT NULL,executed_at timestamptz,undone_at timestamptz);

@@ -1,0 +1,9 @@
+.PHONY: audit-test run console
+audit-test:
+	go test ./...
+	go test -race ./...
+	go vet ./...
+run:
+	go run ./cmd/server
+console:
+	cd web && npm ci && npm test && npm run build

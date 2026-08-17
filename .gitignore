@@ -1,0 +1,10 @@
+.env
+feedback-files/
+proof-exports/
+web/node_modules/
+web/dist/
+bin/
+.codex/
+.claude/
+.gocache/
+.gomodcache/

@@ -1,0 +1,5 @@
+openapi: 3.0.3
+info: {title: Office Feedback Correction API, version: 1.0.0}
+paths:
+  /api/v1/migrations/execute:
+    post: {summary: 双人复核后幂等迁移反馈并重算区域统计, responses: {'200': {description: executed}, '409': {description: rejected}}}

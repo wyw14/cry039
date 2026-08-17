@@ -1,0 +1,1 @@
+{"name":"office-feedback-correction","private":true,"type":"module","scripts":{"test":"vue-tsc --noEmit","build":"vite build"},"dependencies":{"vue":"latest","vite":"latest","pinia":"latest","@vitejs/plugin-vue":"latest"},"devDependencies":{"typescript":"5.9.3","vue-tsc":"3.1.8"}}
