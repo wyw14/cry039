@@ -22,6 +22,6 @@ func (m *FeedbackMemory) LoadForMigration(_ context.Context, id string) ([]domai
 func (m *FeedbackMemory) ReplaceMigrationSet(_ context.Context, id string, items []domain.Feedback) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	m.byMigration[id] = append(m.byMigration[id], items...)
+	m.byMigration[id] = append([]domain.Feedback(nil), items...)
 	return nil
 }
